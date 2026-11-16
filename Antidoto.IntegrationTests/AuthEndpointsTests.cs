@@ -85,4 +85,17 @@ public class AuthEndpointsTests
         // Assert
         resposta.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    [Fact]
+    public async Task Login_JsonMalFormado_RetornaStatus400()
+    {
+        // Arrange
+        var corpo = new StringContent("{ \"email\": \"a@a.com\", \"senha\": \"123\" }\"", System.Text.Encoding.UTF8, "application/json");
+
+        // Act
+        var resposta = await _client.PostAsync("/api/auth/login", corpo);
+
+        // Assert
+        resposta.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

@@ -7,6 +7,7 @@ using Antidoto.API.Observabilidade;
 using Antidoto.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Oracle.EntityFrameworkCore.Infrastructure;
 using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -36,7 +37,9 @@ try
     // ── BANCO (Oracle + EF Core) ──────────────────────────────────────────────
     // Usuário e senha ficam no appsettings.json (ConnectionStrings:Oracle) — uso acadêmico
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseOracle(builder.Configuration.GetConnectionString("Oracle")));
+        options.UseOracle(builder.Configuration.GetConnectionString("Oracle"),
+            // O Oracle da FIAP é 19c: sem isso o EF gera TRUE/FALSE no SQL (ORA-00904)
+            oracle => oracle.UseOracleSQLCompatibility(OracleSQLCompatibility.DatabaseVersion19)));
 
     // ── JWT ───────────────────────────────────────────────────────────────────
     var jwt = builder.Configuration.GetSection("Jwt");
@@ -82,6 +85,8 @@ try
 
     // ── RECURSOS DA API ───────────────────────────────────────────────────────
     builder.Services.AddProblemDetails();
+    // JSON mal formado ou parâmetro inválido → 400 (em Development o padrão seria lançar exceção → 500)
+    builder.Services.Configure<RouteHandlerOptions>(o => o.ThrowOnBadRequest = false);
     builder.Services.AddAntidotoRateLimiting(builder.Configuration);
     builder.Services.AddAntidotoHealthChecks();
     builder.Services.AddAntidotoSwagger();

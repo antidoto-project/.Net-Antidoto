@@ -1,0 +1,124 @@
+### Roteiro de demonstração da Antídoto API
+### No VS Code (REST Client) ou Visual Studio: execute de cima para baixo.
+
+@api = http://localhost:5150
+
+### 1. Health checks (liveness, startup e readiness)
+GET {{api}}/health
+
+###
+GET {{api}}/health/live
+
+###
+GET {{api}}/health/startup
+
+###
+GET {{api}}/health/ready
+
+### 2. SOS público (sem login) — picada de cascavel com sinal grave
+POST {{api}}/api/sos/triagem
+Content-Type: application/json
+
+{
+  "grupoAnimal": "CASCAVEL",
+  "sintomas": ["DOR_LOCAL", "VISAO_DUPLA"],
+  "latitude": -23.5503,
+  "longitude": -46.6339
+}
+
+### 3. SOS com dado inválido → 400
+POST {{api}}/api/sos/triagem
+Content-Type: application/json
+
+{ "grupoAnimal": "DRAGAO", "latitude": 200, "longitude": 0 }
+
+### 4. Unidades com soro botrópico em até 100 km
+GET {{api}}/api/unidades?soro=BOTROPICO&lat=-23.5503&lng=-46.6339&raioKm=100
+
+### 5. Registrar cidadão
+POST {{api}}/api/auth/registrar
+Content-Type: application/json
+
+{ "nome": "Maria Silva", "email": "maria@email.com", "senha": "senha123" }
+
+### 6. Login do cidadão
+# @name loginCidadao
+POST {{api}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "maria@email.com", "senha": "senha123" }
+
+###
+@tokenCidadao = {{loginCidadao.response.body.token}}
+
+### 7. Ocorrência sem token → 401
+POST {{api}}/api/ocorrencias
+Content-Type: application/json
+Idempotency-Key: 3f1c8e2a-1111-4c3b-9a55-000000000001
+
+{ "grupoAnimal": "JARARACA", "urgencia": "ALTA", "latitude": -23.55, "longitude": -46.63 }
+
+### 8. Criar ocorrência (rode 2 vezes: mesmo id e header Idempotency-Replayed: true)
+POST {{api}}/api/ocorrencias
+Authorization: Bearer {{tokenCidadao}}
+Content-Type: application/json
+Idempotency-Key: 3f1c8e2a-1111-4c3b-9a55-000000000001
+
+{ "grupoAnimal": "JARARACA", "urgencia": "ALTA", "latitude": -23.55, "longitude": -46.63 }
+
+### 9. Mesma chave com outro corpo → 422
+POST {{api}}/api/ocorrencias
+Authorization: Bearer {{tokenCidadao}}
+Content-Type: application/json
+Idempotency-Key: 3f1c8e2a-1111-4c3b-9a55-000000000001
+
+{ "grupoAnimal": "CASCAVEL", "urgencia": "CRITICA", "latitude": -23.55, "longitude": -46.63 }
+
+### 10. Sem Idempotency-Key → 400
+POST {{api}}/api/ocorrencias
+Authorization: Bearer {{tokenCidadao}}
+Content-Type: application/json
+
+{ "grupoAnimal": "JARARACA", "urgencia": "ALTA", "latitude": -23.55, "longitude": -46.63 }
+
+### 11. Minhas ocorrências (paginado)
+GET {{api}}/api/ocorrencias/minhas?pagina=1&tamanho=10
+Authorization: Bearer {{tokenCidadao}}
+
+### 12. Cidadão tentando rota de gestor → 403
+GET {{api}}/api/estatisticas/regiao
+Authorization: Bearer {{tokenCidadao}}
+
+### 13. Login do gestor (seed)
+# @name loginGestor
+POST {{api}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "gestor@antidoto.gov.br", "senha": "Gestor@2026" }
+
+###
+@tokenGestor = {{loginGestor.response.body.token}}
+
+### 14. Estatísticas da região (gestor)
+GET {{api}}/api/estatisticas/regiao
+Authorization: Bearer {{tokenGestor}}
+
+### 15. Cadastrar unidade (gestor)
+POST {{api}}/api/unidades
+Authorization: Bearer {{tokenGestor}}
+Content-Type: application/json
+
+{
+  "nome": "UPA Exemplo",
+  "endereco": "Rua Exemplo, 100 - São Paulo - SP",
+  "telefone": "0800 722 6001",
+  "latitude": -23.60,
+  "longitude": -46.70,
+  "soros": ["BOTROPICO", "ESCORPIONICO"]
+}
+
+### 16. Rate limiting: rode o login 6 vezes seguidas → 429 com Retry-After
+POST {{api}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "x@x.com", "senha": "errada" }

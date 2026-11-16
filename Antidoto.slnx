@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Antidoto.API/Antidoto.API.csproj" />
+  <Project Path="Antidoto.UnitTests/Antidoto.UnitTests.csproj" />
+  <Project Path="Antidoto.IntegrationTests/Antidoto.IntegrationTests.csproj" />
+</Solution>

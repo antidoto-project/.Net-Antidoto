@@ -1,0 +1,2 @@
+Passed!  - Failed:     0, Passed:    25, Skipped:     0, Total:    25, Duration: 267 ms - Antidoto.UnitTests.dll (net9.0)
+Passed!  - Failed:     0, Passed:    28, Skipped:     0, Total:    28, Duration: 4 s - Antidoto.IntegrationTests.dll (net9.0)

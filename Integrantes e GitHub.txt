@@ -1,0 +1,8 @@
+Global Solution 2026/2 - CitizenTech
+Projeto: Antídoto API (.NET)
+Repositório: https://github.com/antidoto-project/.Net-Antidoto
+
+Gustavo Souto de Melo - RM 558595
+Iago Liziero Pereira - RM 564063
+Ícaro José dos Santos - RM 562403
+Leonardo Barbosa Santos - RM 558230

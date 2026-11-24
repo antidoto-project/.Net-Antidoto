@@ -344,8 +344,8 @@ O banco InMemory não respeita índice único. Por isso, o caso de duas requisi�
 ## 9. Equipe
 
 | Nome | RM |
-| --- | --- |
-| | |
-| | |
-| | |
-| | |
+|------|----|
+| Gustavo Souto de Melo | 558595 |
+| Iago Liziero Pereira | 564063 |
+| Ícaro José dos Santos | 562403 |
+| Leonardo Barbosa Santos | 558230 |
